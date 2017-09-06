@@ -1,0 +1,2 @@
+gcc - pthread parallel_hashtable.c -o parallel_hashtable
+./parallel_hashtable 1

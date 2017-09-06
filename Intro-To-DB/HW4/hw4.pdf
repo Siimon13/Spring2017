@@ -1,0 +1,163 @@
+Problem 1
+1)
+SELECT id
+FROM takes
+where 
+grade = "A" and
+(course_id = "CS-101" or course_id = "CS-319")
+
+2)
+SELECT student.id, student.name
+FROM student,takes
+where 
+student.id = takes.id and
+grade = "A" and
+(course_id = "CS-101" or course_id = "CS-319")
+
+3)
+SELECT student.id, student.name
+FROM student,takes
+where 
+student.id = takes.id and
+grade = "A" and
+(course_id = "CS-101" or course_id = "CS-319") and
+student.id not in
+(
+    SELECT student.id
+	FROM student,takes
+	where 
+	student.id = takes.id and
+	grade = "A" and
+	course_id = "CS-101"
+)
+
+4)
+SELECT student.id, student.name
+FROM student,takes
+where 
+student.id = takes.id and
+grade = "A" and
+course_id = "CS-319" and
+student.id not in
+(
+    SELECT student.id
+	FROM student,takes
+	where 
+	student.id = takes.id and
+	grade = "A" and
+	course_id = "CS-101"
+)
+
+5)
+select id
+from takes
+GROUP by id,course_id
+having count(*) > 1
+
+6)
+//Creates a table gradescake
+create table gradepoint ( grade varchar(2), numeric_grade float(2) ) 
+
+//Populating gradescale
+insert into gradepoint values('A', 4.0);
+insert into gradespoint values('A-', 3.7);
+insert into gradepoint values('B+', 3.3);
+insert into gradepoint values('B', 3.0);
+insert into gradepoint values('B-', 2.7);
+insert into gradepoint values('C+', 2.3);
+insert into gradepoint values('C', 2.0);
+insert into gradepoint values('C-', 1.7);
+insert into gradepoint values('D+', 1.3);
+insert into gradepoint values('D', 1.0);
+insert into gradepoint values('F', 0.0);
+
+//Get weighted GPA
+SELECT id, sum(weighted)/sum(credits) as GPA
+from 
+(SELECT id,credits,(credits*point) as weighted, (credits*4) as total_weight
+from 
+takes JOIN gradepoint JOIN course
+where grade = letter and takes.course_id = course.course_id) as
+weighted_table
+GROUP by ID
+
+7)
+Constraint the takes to only have grades that are in the gradepoint table
+
+8)
+CREATE VIEW deanslist as 
+SELECT student.id, name
+from 
+student,takes JOIN gradepoint JOIN course
+where student.id = takes.id and grade = letter and takes.course_id = course.course_id
+GROUP by ID
+HAVING sum(credits*point)/sum(credits) > 3.0
+
+9)
+SELECT dept_name,COUNT(dept_name)
+from `deanslist` NATURAL JOIN student
+GROUP by dept_name
+
+10)
+SELECT student.id, name, sum(credits*point)/sum(credits) asGPA
+from 
+student,takes JOIN gradepoint JOIN course
+where student.id = takes.id and grade = letter and takes.course_id = course.course_id and student.dept_name = 'Comp. Sci.'
+GROUP by ID
+ORDER by sum(credits*point)/sum(credits) desc
+limit 1
+
+11)
+select cs_101.id 
+from
+(SELECT student.id, name, sum(credits*point)/sum(credits) as weighted
+from 
+student,takes JOIN gradepoint JOIN course
+where student.id = takes.id and grade = letter and takes.course_id = course.course_id and takes.course_id = 'CS-101'  
+GROUP by ID) as cs_101,
+(SELECT student.id, name, sum(credits*point)/sum(credits) as weighted
+from 
+student,takes JOIN gradepoint JOIN course
+where student.id = takes.id and grade = letter and takes.course_id = course.course_id and takes.course_id = 'CS-347'  
+GROUP by ID) as cs_347
+where cs_101.weighted > cs_347.weighted
+
+12) 
+SELECT DISTINCT takes.id
+from takes
+where grade = 'A' or grade = 'A-'
+
+13)
+SELECT a.course_id
+from
+section a, section b  
+where a.year + 1 = b.year AND
+a.course_id = b.course_id
+
+14)
+SELECT id
+from 
+section, teaches
+having count(DISTINCT section.course_id) = count(DISTINCT teaches.course_id)
+
+15)
+
+16)
+SELECT course.course_id, id
+from teaches RIGHT JOIN course
+on teaches.course_id = course.course_id
+
+Problem 2
+1) If an insturctor is deleted from the table: adviser & teaches. The adviser with the corresponding student will be set to a null. For teaches, the taught class will be deleted from the db. The db was set to on delete set null and on delete cascade respectively.
+
+2) 
+If the on delete set null was set to cascade, the row will be deleted instead of being set to null. When an adviser or student is deleted from adviser table, the row will be gone. when any parent is deleted with on cascde, the child will be deleted too.
+
+3)
+add to takes:
+foreign key (course_id) references teaches(course_id) 
+instead of the section one
+
+4)
+It will be data that is a building and a room number for example Watson room_number 514 will work for a and b. However it won't work for c, because there isn't data that fits Watson with room 514.
+
